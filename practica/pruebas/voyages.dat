@@ -1,0 +1,6 @@
+OdysseusBow ./obj/odysseus_bow.png Ismarus 1050
+TridentOfPoseidon ./obj/trident_of_poseidon.png Scheria 1500
+CircesWand ./obj/circes_wand.png Ogygia 1000
+OracleAmphora ./obj/oracle_amphora.png Ogygia 600
+AeolusBag ./obj/aeolus_bag.png Aeolia 800
+HeliosCattle ./obj/helios_cattle.png Thrinacia 1200
