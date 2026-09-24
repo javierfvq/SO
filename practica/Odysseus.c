@@ -1,6 +1,7 @@
 #include "Odysseus.h"
 #include "IO.h"
 
+#define _GNU_SOURCE
 #include <stdio.h>
 #include "Files.h" 
 #include <fcntl.h>
@@ -12,10 +13,13 @@
 #include <fcntl.h>
 #include <time.h>
 
+
+
+
 void printMessageInitialization (char *nombre) {
     char *buffer;
     asprintf(&buffer, "Odysseus %s is ready to sail.\n\n", nombre);
-    write(STDERR_FILENO, buffer, strlen(buffer));
+    write(STDOUT_FILENO, buffer, strlen(buffer));
     free(buffer);
 }
 
@@ -102,7 +106,6 @@ int main (int argc, char* argv[]) {
 
   } else {
 
-    char *buffer;
     Odysseus *odysseus; 
     odysseus = malloc(sizeof(Odysseus));
 
@@ -111,7 +114,7 @@ int main (int argc, char* argv[]) {
       free(odysseus);
       return 1;
     } 
-    
+
     printMessageInitialization(odysseus -> name);
 
 

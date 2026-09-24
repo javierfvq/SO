@@ -8,7 +8,7 @@
 void printMessage (char *message) {
     char *buffer;
 
-    if (asprintf(&buffer, "%s", message) == NULL) {
+    if (asprintf(&buffer, "%s", message) == -1) {
         return;
     } else {
         write(STDOUT_FILENO, buffer, strlen(buffer));
@@ -20,7 +20,7 @@ void printMessage (char *message) {
 void printError (char *error) {
     char *buffer;
 
-    if (asprintf(&buffer, "%s", error) == NULL) {
+    if (asprintf(&buffer, "%s", error) == -1) {
         return;
     } else {
         write(STDERR_FILENO, buffer, strlen(buffer));
