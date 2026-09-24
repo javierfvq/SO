@@ -1,0 +1,13 @@
+# Ignorar ejecutables de Mac/Linux
+odysseus
+practica/odysseus
+
+# Ignorar ejecutables de Windows (por si acaso)
+*.exe
+
+# Ignorar archivos objeto y de depuración
+*.o
+*.out
+
+# Ignorar archivos del sistema operativo
+.DS_Store
