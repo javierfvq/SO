@@ -127,6 +127,7 @@ int  check_island_routes(Island_CONFIG *island){
     sphragis_island.known_islands = names;
     sphragis_island.known_island_count = island->counter;
     int valid_count = SPHRAGIS_filter_island_configuration(&sphragis_island);
+    names = sphragis_island.known_islands;
 
     if (valid_count < 0) {
         printError("Error filtering island configuration\n");
@@ -146,7 +147,7 @@ int  check_island_routes(Island_CONFIG *island){
         valid_routes= malloc(valid_count * sizeof(Route));
         if (valid_routes == NULL) {
             printError("Error allocating memory for valid routes\n");
-            for (int i = 0; i <  valid_count; i++) {
+            for (int i = 0; i <  island->counter; i++) {
                 free(names[i]);  
             }
             for (int i = 0; i < island->counter; i++) {
@@ -165,8 +166,8 @@ int  check_island_routes(Island_CONFIG *island){
     int j=0;
     for(int i=0; i<island->counter; i++){
         int valida=0;
-        for (int k=0; k<valid_count; k++){
-            if ((island->routes[i].name==names[k])){//Lo hago para no acceder al contenido de un posible contenido liberado,de esta manera solo miro si la direccion de memoria es la misma ,o si ya se ha liberado la memoria y no quiero acceder a ella
+        for (int k=0; k < island->counter; k++){
+            if ((island->routes[i].name==names[k]) && names[k] != NULL){//Lo hago para no acceder al contenido de un posible contenido liberado,de esta manera solo miro si la direccion de memoria es la misma ,o si ya se ha liberado la memoria y no quiero acceder a ella
                 valida=1;
                 break;
             }
@@ -231,6 +232,10 @@ int  load_config_island(const char *path, Island_CONFIG *island) {
             island->routes = NULL;
             
             while((route_name = parsear(fd, ' '))!= NULL) {
+                if (route_name[0] == '\0') {
+                    free(route_name);
+                    continue;
+                }   
                 char *route_ip = parsear(fd, ' ');
                 char *route_port = parsear(fd, '\n');
                 if(route_ip == NULL || route_port == NULL){

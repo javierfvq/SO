@@ -107,7 +107,7 @@ int loadVoyages (char* filepath, Ithaca *ithaca) {
 
         while ((object = parsear(fd, ' ')) != NULL) {
             if (object[0] == '\0') {
-                close(fd);
+                free(object);
                 continue;
             }
             file = parsear(fd, ' ');
@@ -120,7 +120,7 @@ int loadVoyages (char* filepath, Ithaca *ithaca) {
                 free(destination);
                 free(reward);
                 printError("Error is missing a field\n");
-                close(fd);
+                close(fd); 
                 return -1 ;
             } else {
                Voyage *tmp= realloc(ithaca->voyages, sizeof(Voyage) * (ithaca->num_voyages + 1));
