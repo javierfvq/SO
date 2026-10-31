@@ -588,7 +588,6 @@ void DoBuyMap(Odysseus *odysseus){
     }
 
     num_trozos = partir_datos(respuesta.data, trozos, 7, '&');
-
     if (num_trozos == 3 && atoi(trozos[2]) == 0) {    
         odysseus->money -= 50;                        
         asprintf(&buffer, "Bought the map of %s for 50 gold.\n", odysseus->viaje_actual.isla_actual);
@@ -598,7 +597,6 @@ void DoBuyMap(Odysseus *odysseus){
         return;
     }
 
-    num_trozos = partir_datos(respuesta.data, trozos, 7, '&');
     if (num_trozos < 7) {
         printError("Error: malformed map entry.\n");
         return;
@@ -734,6 +732,7 @@ void DoBuy(Odysseus *odysseus,char *product_name,int quantity){
     if (resultado == -2) {
         printError("Error: Could not get the market from the island.\n");
         cerrarConexionOdysseus(odysseus);
+        alarm(0);
         return;
     }
 
