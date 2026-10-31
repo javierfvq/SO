@@ -3,7 +3,7 @@
 
 int searchProductInMarket(Island_CONFIG *island, const char *product_name) {
     for (int i = 0; i < island->product_count; i++) {
-        if (strcmp(island->products[i].name, product_name) == 0) {
+        if (strcasecmp(island->products[i].name, product_name) == 0) {
             return i; 
         }
     }

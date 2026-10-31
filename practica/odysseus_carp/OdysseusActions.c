@@ -586,6 +586,18 @@ void DoBuyMap(Odysseus *odysseus){
         free(buffer);
         return;
     }
+
+    num_trozos = partir_datos(respuesta.data, trozos, 7, '&');
+
+    if (num_trozos == 3 && atoi(trozos[2]) == 0) {    
+        odysseus->money -= 50;                        
+        asprintf(&buffer, "Bought the map of %s for 50 gold.\n", odysseus->viaje_actual.isla_actual);
+        printMessage(buffer);
+        free(buffer);
+        printMessage("This island has no known routes.\n\n");
+        return;
+    }
+
     num_trozos = partir_datos(respuesta.data, trozos, 7, '&');
     if (num_trozos < 7) {
         printError("Error: malformed map entry.\n");
@@ -646,17 +658,101 @@ void DoShowMap(Mapa *mapa){
 }
 
 
+int searchProductPrice (Odysseus *odysseus, char *product_name, int *precio) {
+    Trama trama;
+    char *trozos[5];
+    int total_productos = 0;
+    int producto_encontrado=-1;
+    int num_trozos = 0;
+
+    if (sendResponse(odysseus->viaje_actual.fd, LIST_MARKET_TYPE, REQUEST_FLAG, "") < 0) {
+        return -2;
+    }
+
+    if(recibir_trama(odysseus->viaje_actual.fd, &trama) < 0) {
+        return -2;
+    }
+
+    if (trama.type != LIST_MARKET_TYPE || trama.flags == ERROR_FLAG) {
+        return -2;
+    }
+
+    num_trozos = partir_datos(trama.data, trozos, 5, '&');
+    if (num_trozos < 5) {
+        return -2;
+    }
+
+    total_productos=atoi(trozos[1]);
+
+    if (strcasecmp(trozos[2], product_name) == 0 && strcmp(trozos[2], "MAP") != 0) {
+        *precio = atoi(trozos[4]);
+        producto_encontrado = 0;
+    }
+
+
+    for (int i = 1; i < total_productos; i++) {
+
+        if(recibir_trama(odysseus->viaje_actual.fd, &trama) < 0) {
+            return -2;
+        }
+
+        if (trama.type != LIST_MARKET_TYPE || trama.flags == ERROR_FLAG) {
+            return -2;
+        }
+
+        num_trozos = partir_datos(trama.data, trozos, 5, '&');
+        if (num_trozos < 5) {
+            return -2;
+        }
+
+        if (strcasecmp(trozos[2], product_name) == 0 && strcmp(trozos[2], "MAP") != 0) {
+            *precio = atoi(trozos[4]);
+            producto_encontrado = 0;
+        }
+
+
+    }
+
+return producto_encontrado;
+}
+
 void DoBuy(Odysseus *odysseus,char *product_name,int quantity){
     char *buffer;
     Trama respuesta;
     char *trozos[4];
     int num_trozos = 0;
     int cost=0;
+    int precio = 0;
+    int resultado = 0;
 
     if (odysseus->viaje_actual.ubicacion != EN_PUERTO) {
         printMessage("You must be docked at an island to buy a product.\n\n");
         return;
     }
+
+    resultado = searchProductPrice(odysseus, product_name, &precio);
+    if (resultado == -2) {
+        printError("Error: Could not get the market from the island.\n");
+        cerrarConexionOdysseus(odysseus);
+        return;
+    }
+
+    if (resultado == -1) {
+        if (asprintf(&buffer, "%s is not sold in this market.\n\n", product_name) != -1) {
+            printMessage(buffer);
+            free(buffer);
+        }
+        return;
+    }
+
+    if (odysseus->money < (precio * quantity)) {
+        if (asprintf(&buffer, "You do not have enough gold. %d kg of %s cost %d gold and you have %d.\n\n", quantity, product_name, precio * quantity, odysseus->money) != -1) {
+            printMessage(buffer);
+            free(buffer);
+        }
+        return;
+    }
+
     asprintf(&buffer, "%s&%d", product_name, quantity);
     if(sendResponse(odysseus->viaje_actual.fd,BUY_TYPE,REQUEST_FLAG,buffer) < 0){
         printError("Error: Could not send buy request to island.\n");
@@ -685,17 +781,13 @@ void DoBuy(Odysseus *odysseus,char *product_name,int quantity){
     }
 
     cost = atoi(trozos[3]);
-    if (odysseus->money < cost) {
-        printMessage("You do not have enough gold to buy this product.\n\n");
-        return;
-    }
 
     odysseus->money -= cost;
-    if(addFood(odysseus, product_name, quantity) != 0){
+    if(addFood(odysseus, trozos[1], quantity) != 0){
         printError("Error: Could not add food to cargo.\n");
         return;
     }
-    asprintf(&buffer,"Bought %d kg of %s for %d gold.\n\n",quantity,product_name,cost);
+    asprintf(&buffer,"Bought %d kg of %s for %d gold.\n\n",quantity,trozos[1],cost);
     printMessage(buffer);
     free(buffer);
 }
